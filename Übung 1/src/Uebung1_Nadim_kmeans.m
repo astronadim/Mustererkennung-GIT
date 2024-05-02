@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Musterkennung Übung 1
 % Gruppe 1
-% Optimized Version
+% Optimized Version with Custom Color Codes for Segmentation Mask
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 clear all; close all; clc; %#ok<CLALL>
@@ -14,8 +14,8 @@ rng(1);
 scale = 0.5;  % Reduction in image size for faster processing
 r = 2;        % Tile row
 c = 13;       % Tile column
-k_means_max_iter = 20;
-k = 40;
+k_means_max_iter = 40;
+k = 6;
 disp('----------------------------');
 
 %% Load Data and Process:
@@ -31,6 +31,7 @@ gt = uint8(data.potsdam.rgbLabel2classLabel(gt));
 
 % Image resizing
 RGB = imresize(RGB, scale, 'method', 'nearest');
+RGBIR = imresize(RGBIR, scale, 'method', 'nearest');
 nDSM = imresize(nDSM, scale, 'method', 'nearest');
 IR = imresize(IR, scale, 'method', 'nearest');
 gt = imresize(gt, scale, 'method', 'nearest');
@@ -42,24 +43,36 @@ title(sprintf('Input image RGB, scale = %f', scale));
 
 %% kmeans Clustering
 % Reshape image matrices to vectors and prepare for kmeans
-RGB_R = reshape(RGB(:,:,1), [], 1);
-RGB_G = reshape(RGB(:,:,2), [], 1);
-RGB_B = reshape(RGB(:,:,3), [], 1);
-IR_ = reshape(IR, [], 1);
-nDSM_ = reshape(nDSM, [], 1);
+RGB_vec = reshape(RGB, [], 3);  % Reshape RGB into an N by 3 matrix
+IR_vec = reshape(IR, [], 1);    % Reshape IR into an N by 1 vector
+nDSM_vec = reshape(nDSM, [], 1); % Reshape nDSM into an N by 1 vector
 
-input_image = [RGB_R, RGB_G, RGB_B, IR_, nDSM_];
+input_image = [RGB_vec, IR_vec, nDSM_vec];  % Concatenate horizontally
 
 % kmeans computation
-[idx, C] = kmeans(input_image, k, 'MaxIter', k_means_max_iter, 'Start', 'plus');
+[idx, C] = kmeans(input_image, k, 'MaxIter', k_means_max_iter);
 
 % Reshape index matrix to the original image size
-mask = reshape(idx, size(RGB, 1), size(RGB, 2));
+mask=reshape(idx,3000,3000);
 
-% Display the kmeans segmentation mask
+% Custom color coding for visualization
+imp_surf = mask == 1; % Adjust the label number as per actual clustering results
+building = mask == 2;
+low_veg = mask == 3;
+tree = mask == 4;
+car = mask == 5;
+clutter = mask == 6;
+
+r = imp_surf | car | clutter;
+g = imp_surf | low_veg | tree | car;
+b = imp_surf | building | low_veg;
+
+RGB_label_image = cat(3, r, g, b) * 255;
+
+% Display the custom kmeans segmentation mask
 figure;
-imshow(label2rgb(mask), []);
-title(['kmeans Segmentation Mask with k = ', num2str(k), ' (No Boundary)']);
+imshow(RGB_label_image, []);
+title('Custom kmeans Segmentation Mask with Color Coding');
 
 % Calculate and display boundary mask
 bmask = boundarymask(mask);
@@ -67,31 +80,4 @@ bmask = boundarymask(mask);
 % Display RGB image with boundary mask
 figure;
 imshow(imoverlay(RGB, bmask, 'cyan'));
-title(['kmeans Boundary Mask with k = ', num2str(k)]);
-
-
-
-%% Feature Extraction and Labeling
-% Preallocate feature arrays
-feature_R = zeros(numel(RGB_R), 1);
-feature_G = zeros(numel(RGB_G), 1);
-feature_B = zeros(numel(RGB_B), 1);
-
-% Efficient computation of features using vectorization
-for i = 1:k
-    idx_current = (idx == i);
-    feature_R(idx_current) = mean(RGB_R(idx_current));
-    feature_G(idx_current) = mean(RGB_G(idx_current));
-    feature_B(idx_current) = mean(RGB_B(idx_current));
-end
-
-% Construct feature image
-feature_RGB = zeros(size(RGB));
-feature_RGB(:,:,1) = reshape(feature_R, size(RGB, 1), size(RGB, 2));
-feature_RGB(:,:,2) = reshape(feature_G, size(RGB, 1), size(RGB, 2));
-feature_RGB(:,:,3) = reshape(feature_B, size(RGB, 1), size(RGB, 2));
-
-% Display the feature image
-figure;
-imshow(uint8(feature_RGB));
-title('kmeans segmented image with RGB features');
+title('kmeans Boundary Mask with Color Coding');
