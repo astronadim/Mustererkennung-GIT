@@ -1,97 +1,109 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Musterkennung Übung 1
 % Gruppe 1
-% Optimized Version
+% Christian Edelmann 3560916
+% Lars Pfeiffer 
+% Nadim Maraqten
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-clear all; close all; clc; %#ok<CLALL>
-format longG;
+clear all; format longG; close all; clc;
 run init;
 warning('off', 'Images:initSize:adjustingMag');
 rng(1);
 
 %% Parameters:
-scale = 0.5;  % Reduction in image size for faster processing
-r = 2;        % Tile row
-c = 13;       % Tile column
-k_means_max_iter = 20;
-k = 40;
+scale = 1/2;
+r = 2;   % tile row
+c = 13;  % tile column
+numSuperpixels = 30;
+
 disp('----------------------------');
 
-%% Load Data and Process:
-RGBIR = single(d_RGBIR.loadData(r, c)) / 255;
+%% Load Data:
+RGBIR = single(d_RGBIR.loadData(r, c))/255;
 RGB = RGBIR(:,:,1:3);
 IR = RGBIR(:,:,4);
-
 nDSM = single(d_nDSM.loadData(r, c));
 nDSM = (nDSM - min(nDSM(:))) / (max(nDSM(:)) - min(nDSM(:)));
-
 gt = d_GT.loadData(r, c);
 gt = uint8(data.potsdam.rgbLabel2classLabel(gt));
 
-% Image resizing
+% Rescale all input channels
 RGB = imresize(RGB, scale, 'method', 'nearest');
 nDSM = imresize(nDSM, scale, 'method', 'nearest');
 IR = imresize(IR, scale, 'method', 'nearest');
 gt = imresize(gt, scale, 'method', 'nearest');
 
-% Display RGB image
-figure;
-imshow(RGB);
-title(sprintf('Input image RGB, scale = %f', scale));
+%% SLIC Segmentation
+[L, N] = superpixels(RGB, numSuperpixels);
 
-%% kmeans Clustering
-% Reshape image matrices to vectors and prepare for kmeans
-RGB_R = reshape(RGB(:,:,1), [], 1);
-RGB_G = reshape(RGB(:,:,2), [], 1);
-RGB_B = reshape(RGB(:,:,3), [], 1);
-IR_ = reshape(IR, [], 1);
-nDSM_ = reshape(nDSM, [], 1);
-
-input_image = [RGB_R, RGB_G, RGB_B, IR_, nDSM_];
-
-% kmeans computation
-[idx, C] = kmeans(input_image, k, 'MaxIter', k_means_max_iter, 'Start', 'plus');
-
-% Reshape index matrix to the original image size
-mask = reshape(idx, size(RGB, 1), size(RGB, 2));
-
-% Display the kmeans segmentation mask
-figure;
-imshow(label2rgb(mask), []);
-title(['kmeans Segmentation Mask with k = ', num2str(k), ' (No Boundary)']);
-
-% Calculate and display boundary mask
-bmask = boundarymask(mask);
-
-% Display RGB image with boundary mask
-figure;
-imshow(imoverlay(RGB, bmask, 'cyan'));
-title(['kmeans Boundary Mask with k = ', num2str(k)]);
-
-
-
-%% Feature Extraction and Labeling
-% Preallocate feature arrays
-feature_R = zeros(numel(RGB_R), 1);
-feature_G = zeros(numel(RGB_G), 1);
-feature_B = zeros(numel(RGB_B), 1);
-
-% Efficient computation of features using vectorization
-for i = 1:k
-    idx_current = (idx == i);
-    feature_R(idx_current) = mean(RGB_R(idx_current));
-    feature_G(idx_current) = mean(RGB_G(idx_current));
-    feature_B(idx_current) = mean(RGB_B(idx_current));
+%% Feature Calculation and Label Assignment
+feature_vector = zeros(N, 5); % [Mean R, Mean G, Mean B, Mean nDSM, Mean IR]
+labels = zeros(N, 1);
+for labelVal = 1:N
+    mask = L == labelVal;
+    segmentPixelsRGB = RGB(repmat(mask, [1 1 3])); % Mask replicated for 3 channels
+    numPixels = sum(mask(:)); % Total number of pixels in the segment
+    if numPixels > 0
+        segmentPixelsRGB = reshape(segmentPixelsRGB, [], 3);
+        feature_vector(labelVal, 1:3) = mean(segmentPixelsRGB, 1);
+    else
+        feature_vector(labelVal, 1:3) = 0; % Default to 0 if no pixels in mask
+    end
+    feature_vector(labelVal, 4) = mean(nDSM(mask), 'all');
+    feature_vector(labelVal, 5) = mean(IR(mask), 'all');
+    labels(labelVal) = mode(gt(mask));
 end
 
-% Construct feature image
-feature_RGB = zeros(size(RGB));
-feature_RGB(:,:,1) = reshape(feature_R, size(RGB, 1), size(RGB, 2));
-feature_RGB(:,:,2) = reshape(feature_G, size(RGB, 1), size(RGB, 2));
-feature_RGB(:,:,3) = reshape(feature_B, size(RGB, 1), size(RGB, 2));
+%% Visualize the results
+feature_vector_normalized = feature_vector(:, 1:3) / 255;
+feature_vector_normalized = max(0, min(1, feature_vector_normalized));
 
-% Display the feature image
+% Visualize segmentation boundaries
 figure;
-imshow(uint8(feature_RGB));
-title('kmeans segmented image with RGB features');
+BW = boundarymask(L);
+imshow(imoverlay(RGB, BW, 'cyan'));
+title('SLIC Segmentation Boundaries');
+
+%% SLIC Segmentation
+[L, N] = superpixels(RGB, numSuperpixels);
+
+% Ensure L is properly initialized and contains superpixel labels
+if isempty(L) || any(size(L) == 0)
+    error('Segmentation resulted in an empty label matrix. Please check input image and parameters.');
+end
+
+% Correctly initialize label_to_index with scalar input for zeros()
+maxLabel = max(L(:));  % Ensure scalar maximum label
+label_to_index = zeros(maxLabel, 1); % Initialize mapping for labels to indices
+
+%% Map labels to unique index values
+unique_labels = unique(L);
+label_to_index(unique_labels) = 1:numel(unique_labels);  % Map each unique label to an index
+
+
+% Display features using the average color per segment
+unique_labels = unique(L);
+label_to_index = zeros(max(L), 1); % Create mapping for used labels
+label_to_index(unique_labels) = 1:numel(unique_labels);
+
+colormap_features = zeros(numel(unique_labels), 3); % Allocate only for used labels
+for label = unique_labels' % Use transpose to ensure column vector
+    mask = (L == label); % Logical index for current label
+    if any(mask(:))
+        index = label_to_index(label);
+        colormap_features(index, :) = mean(feature_vector_normalized(mask, :), 1);
+    end
+end
+
+% Display feature image
+feature_image = label2rgb(L, colormap_features(label_to_index(L), :), [1 1 1]);
+figure;
+imshow(feature_image);
+title('SLIC Segment Feature Colors');
+
+% Display labeled segments using a predefined colormap
+labeled_image = label2rgb(L, jet(numel(unique_labels)), [1 1 1]);
+figure;
+imshow(labeled_image);
+title('SLIC Segment Labels');
