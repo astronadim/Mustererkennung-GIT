@@ -21,12 +21,12 @@ tic;  % Start timing
 scale  = 1/2
 r      = 2   % tile row
 c      = 13  % tile column
-segments_vector = [10, 20, 30, 40, 50, 100, 200, 300, 400, 500];
+segments_sizes_vector = [5, 10, 15, 20, 50, 100];
 disp('----------------------------')
 
 % Preallocation for performance
-accuracies = zeros(length(segments_vector), 1);
-times = zeros(length(segments_vector), 1);
+accuracies = zeros(length(segments_sizes_vector), 1);
+times = zeros(length(segments_sizes_vector), 1);
 
 %% Load Data:
 % Load data by row / column number:
@@ -82,12 +82,12 @@ feature_nDSM=ones(3000);
 feature_IR=ones(3000);
 
 % Loop through each segment size
-for idx_current = 1:length(segments_vector)
+for idx_current = 1:length(segments_sizes_vector)
    
     close all;
     
     tic;  % Start timing for each segment size
-    segment_size = segments_vector(idx_current);
+    segment_size = segments_sizes_vector(idx_current);
     segments = 3000 / segment_size
     idx = zeros(3000);  % Pre-allocate idx for the maximum required size
 
@@ -177,18 +177,18 @@ end
 %% Plot accuracies and times
 f = figure;
 yyaxis left;
-plot(segments_vector, accuracies*100, '-o');
+plot(segments_sizes_vector, accuracies*100, '-o');
 ylabel('Accuracy [%]');
 ylim([0 100]);  % Set y-axis limits from 0 to 100
 
 
 yyaxis right;
-plot(segments_vector, times, '-o');
+plot(segments_sizes_vector, times, '-o');
 ylabel('Time (s)');
 ylim([0 max(times)]);  % Set y-axis limits from 0 to the maximum time
 
 
-xlabel('Segment Size');
+xlabel('Segment Size [pixels]');
 title('Accuracy and Runtime for Various Segment Sizes');
 legend('Accuracy', 'Runtime', 'Location', 'best');
 saveas(f, ['results_chessboard/accuracy_runtime_' datestr(now, 'yyyy-mm-dd_HHMMSS') '.png']);
