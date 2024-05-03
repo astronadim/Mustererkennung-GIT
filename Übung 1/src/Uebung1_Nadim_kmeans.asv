@@ -19,7 +19,6 @@ rng(1);
 scale  = 1/2
 r      = 2   % tile row
 c      = 13  % tile column
-k_means_max_iter = 20
 k_vector=[10,20,30,40,50];
 disp('----------------------------')
 
@@ -78,6 +77,7 @@ for idx_current = 1:length(k_vector)
     k = k_vector(idx_current)
     idx = zeros(3000);  % Pre-allocate idx for the maximum required size
     
+    k_means_max_iter = k+10;
     idx=kmeans(input_image,k,'MaxIter',k_means_max_iter);
 
     mask=reshape(idx,3000,3000);
@@ -140,7 +140,7 @@ for idx_current = 1:length(k_vector)
 
     %% determine runtime
     times(idx_current) = toc;  % End timing and capture the elapsed time
-    disp(['Elapsed Time: ', num2str(times(idx_current)), ' seconds'])
+    disp(['Elapsed Time: ', num2str(times(idx_current)), ' seconds']);
 
     figure
     imshow(feature_RGB,[])
@@ -174,7 +174,7 @@ ylim([0 max(times)]);  % Set y-axis limits from 0 to the maximum time
 
 
 xlabel('Cluster numbers k');
-title(['Accuracy and Runtime for Various Cluster Numbers k and ', num2str(k_means_max_iter), ' max. iterations']);
+title('Accuracy and Runtime for Various Cluster Numbers k and ');
 legend('Accuracy', 'Runtime', 'Location', 'best');
 saveas(f, ['results_kmeans/accuracy_runtime_' datestr(now, 'yyyy-mm-dd_HHMMSS') '.png']);
 

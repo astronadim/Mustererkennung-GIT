@@ -191,6 +191,7 @@ ylim([0 max(times)]);  % Set y-axis limits from 0 to the maximum time
 xlabel('Segment Size [pixels]');
 title('Accuracy and Runtime for Various Segment Sizes');
 legend('Accuracy', 'Runtime', 'Location', 'best');
+grid on;  % This turns the grid lines on
 saveas(f, ['results_chessboard/accuracy_runtime_' datestr(now, 'yyyy-mm-dd_HHMMSS') '.png']);
 
 
