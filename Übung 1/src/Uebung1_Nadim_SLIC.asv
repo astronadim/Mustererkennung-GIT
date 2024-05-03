@@ -17,7 +17,7 @@ rng(1);
 scale  = 1/2;
 r      = 2;   % tile row
 c      = 13;  % tile column
-k_vector=[250, 500, 1000, 2000, 4000];
+k_vector=[250, 500, ];
 compactness=1;
 method='slic0';
 disp('----------------------------');
@@ -110,7 +110,7 @@ for idx_current = 1:length(k_vector)
     feature_B = reshape(feature_B, [3000, 3000]);
     feature_RGB = cat(3, feature_R, feature_G, feature_B);
     
-    times(idx_current) = toc  % End timing
+    times(idx_current) = toc;  % End timing
     
     figure;
     imshow(feature_RGB, []);
@@ -122,7 +122,7 @@ for idx_current = 1:length(k_vector)
     
     % Calculate accuracy
     correctly_identified_labels = label_image == reshape(gt, [3000, 3000]);
-    accuracies(idx_current) = sum(correctly_identified_labels, 'all') / (3000 * 3000)
+    accuracies(idx_current) = sum(correctly_identified_labels, 'all') / (3000 * 3000);
 end
 
 %% Plot accuracies and times
