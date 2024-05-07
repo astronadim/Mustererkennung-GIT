@@ -18,7 +18,7 @@ rng(1);
 scale  = 1/2;
 r      = 3;   % tile row
 c      = 14;  % tile column
-k_vector=[20000];
+k_vector=000];
 
 compactness=1;
 method='slic0';
@@ -134,7 +134,12 @@ for idx_current = 1:length(k_vector)
     title(['SLIC RGB features with k=' ,num2str(k), ', compactness= ', num2str(compactness), ' and method =', method]);
     
     figure;
-    imshow(label_image, getColorMap('V2DLabels'));
+    imshow(label_image, colorMap = [1 1 1;
+                                    0 0 1;
+                                    0 1 1;
+                                    0 1 0;
+                                    1 1 0;
+                                    1 0 0];);
     title(['SLIC labeled image with k=' ,num2str(k), ', compactness= ', num2str(compactness), ' and method =', method]);
     
     % Calculate accuracy
@@ -156,5 +161,5 @@ f = figure;
 % 
 % xlabel('Cluster numbers k');
 % title(['Accuracy and Runtime for Various Cluster Numbers k with ', num2str(compactness), ' compactness and method', method]);
-legend('Accuracy', 'Runtime', 'Location', 'best');
+%legend('Accuracy', 'Runtime', 'Location', 'best');
 % saveas(f, ['results_slic/accuracy_runtime_' datestr(now, 'yyyy-mm-dd_HHMMSS') '.png']);

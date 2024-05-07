@@ -134,7 +134,7 @@ for idx_current = 1:length(k_vector)
     title(['SLIC RGB features with k=' ,num2str(k), ', compactness= ', num2str(compactness), ' and method =', method]);
     
     figure;
-    imshow(label_image, getColorMap('V2DLabels'));
+    imshow(label_image, [], 'Colormap', [1 1 1; 0 0 1; 0 1 1; 0 1 0; 1 1 0; 1 0 0]);
     title(['SLIC labeled image with k=' ,num2str(k), ', compactness= ', num2str(compactness), ' and method =', method]);
     
     % Calculate accuracy
@@ -143,7 +143,7 @@ for idx_current = 1:length(k_vector)
 end
 
 %% Plot accuracies and times
-f = figure;
+%f = figure;
 % yyaxis left;
 % plot(k_vector, accuracies * 100, '-o');
 % ylabel('Accuracy [%]');
