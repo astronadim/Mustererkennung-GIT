@@ -21,7 +21,7 @@ scale  = 1/2
 r      = 3   % tile row
 c      = 14  % tile column
 k_means_max_iter = 20
-k_vector=[10,20,30,40,50];
+k_vector=[20];
 
 disp('----------------------------')
 
@@ -171,21 +171,21 @@ end
 
 
 %% Plot accuracies and times
-f = figure;
-yyaxis left;
-plot(k_vector, accuracies*100, '-o');
-ylabel('Accuracy [%]');
-ylim([0 100]);  % Set y-axis limits from 0 to 100
-
-
-yyaxis right;
-plot(k_vector, times, '-o');
-ylabel('Time (s)');
-ylim([0 max(times)]);  % Set y-axis limits from 0 to the maximum time
-
-
-xlabel('Cluster numbers k');
-title(['Accuracy and Runtime for Various Cluster Numbers k and ', num2str(k_means_max_iter), ' max. iterations']);
+% f = figure;
+% yyaxis left;
+% plot(k_vector, accuracies*100, '-o');
+% ylabel('Accuracy [%]');
+% ylim([0 100]);  % Set y-axis limits from 0 to 100
+% 
+% 
+% yyaxis right;
+% plot(k_vector, times, '-o');
+% ylabel('Time (s)');
+% ylim([0 max(times)]);  % Set y-axis limits from 0 to the maximum time
+% 
+% 
+% xlabel('Cluster numbers k');
+% title(['Accuracy and Runtime for Various Cluster Numbers k and ', num2str(k_means_max_iter), ' max. iterations']);
 legend('Accuracy', 'Runtime', 'Location', 'best');
 % saveas(f, ['results_kmeans/accuracy_runtime_' datestr(now, 'yyyy-mm-dd_HHMMSS') '.png']);
 

@@ -22,7 +22,7 @@ tic;  % Start timing
 scale  = 1/2
 r      = 3   % tile row
 c      = 14  % tile column
-segments_sizes_vector = [5, 10, 15, 20, 50, 100];
+segments_sizes_vector = [15];
 
 disp('----------------------------')
 
@@ -182,23 +182,23 @@ for idx_current = 1:length(segments_sizes_vector)
 end
 
 %% Plot accuracies and times
-f = figure;
-yyaxis left;
-plot(segments_sizes_vector, accuracies*100, '-o');
-ylabel('Accuracy [%]');
-ylim([0 100]);  % Set y-axis limits from 0 to 100
-
-
-yyaxis right;
-plot(segments_sizes_vector, times, '-o');
-ylabel('Time (s)');
-ylim([0 max(times)]);  % Set y-axis limits from 0 to the maximum time
-
-
-xlabel('Segment Size [pixels]');
-title('Accuracy and Runtime for Various Segment Sizes');
-legend('Accuracy', 'Runtime', 'Location', 'best');
-grid on;  % This turns the grid lines on
+% f = figure;
+% yyaxis left;
+% plot(segments_sizes_vector, accuracies*100, '-o');
+% ylabel('Accuracy [%]');
+% ylim([0 100]);  % Set y-axis limits from 0 to 100
+% 
+% 
+% yyaxis right;
+% plot(segments_sizes_vector, times, '-o');
+% ylabel('Time (s)');
+% ylim([0 max(times)]);  % Set y-axis limits from 0 to the maximum time
+% 
+% 
+% xlabel('Segment Size [pixels]');
+% title('Accuracy and Runtime for Various Segment Sizes');
+% legend('Accuracy', 'Runtime', 'Location', 'best');
+%grid on;  % This turns the grid lines on
 % saveas(f, ['results_chessboard/accuracy_runtime_' datestr(now, 'yyyy-mm-dd_HHMMSS') '.png']);
 
 

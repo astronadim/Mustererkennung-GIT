@@ -18,7 +18,7 @@ rng(1);
 scale  = 1/2;
 r      = 3;   % tile row
 c      = 14;  % tile column
-k_vector=[1000];
+k_vector=[20000];
 
 compactness=1;
 method='slic0';
@@ -156,5 +156,5 @@ f = figure;
 % 
 % xlabel('Cluster numbers k');
 % title(['Accuracy and Runtime for Various Cluster Numbers k with ', num2str(compactness), ' compactness and method', method]);
-%legend('Accuracy', 'Runtime', 'Location', 'best');
+legend('Accuracy', 'Runtime', 'Location', 'best');
 % saveas(f, ['results_slic/accuracy_runtime_' datestr(now, 'yyyy-mm-dd_HHMMSS') '.png']);
