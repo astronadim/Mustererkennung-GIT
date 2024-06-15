@@ -318,7 +318,7 @@ hold on
 ylabel('precision/accuracy [%]')
 ax.YColor = 'k';
 
-hold on
+hold on 
 yyaxis right
 plot(tree_sizes,runtime(:,1),'--o','Color','m')
 ylabel('runtime [s]')

@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Musterkennung Übung 1
+% Musterkennung Übung 2
 % Gruppe 1
 % Christian Edelmann 3560916
 % Lars Pfeiffer      3514519
