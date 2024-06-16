@@ -22,10 +22,11 @@ end
 
 %% Random Forest mit Trainingsbild
 
-tree_sizes = [10, 25, 50, 100, 250, 500, 1000];
+tree_sizes = [1, 5, 10, 20 , 50, 100];
 runtime = zeros(length(tree_sizes));
 main_diagonal = zeros(6, length(tree_sizes));
 overall_accuracy = zeros(1, length(tree_sizes));
+train_accuracy = zeros(1, length(tree_sizes));
 
 for p = 1:length(tree_sizes)
     trees = tree_sizes(p);
@@ -69,6 +70,22 @@ for p = 1:length(tree_sizes)
         ' pix total segments= ', num2str(segments*segments), '\n and labeled by Random Forest with ', num2str(trees), ' trees'])
 
     saveas(gcf, fullfile(output_folder, ['training_image_trees_', num2str(trees), '.png']));
+
+    %% Confusion Matrix for Training Data
+    % Reshape the labels to vectors for comparison
+    gt_vector_train = list_labels_train; % Already a vector
+    predicted_label_train_vector = predicted_labels_train; % Already a vector
+    C_train = confusionmat(gt_vector_train, predicted_label_train_vector);
+
+    % Calculate accuracy for training data
+    train_accuracy(p) = sum(gt_vector_train == predicted_label_train_vector) / length(gt_vector_train) * 100;
+
+    figure
+    C_train_chart = confusionchart(gt_vector_train, predicted_label_train_vector, 'RowSummary', 'row-normalized', 'ColumnSummary', 'column-normalized');
+    C_train_chart.Normalization = 'row-normalized';
+    title(['Training Confusion Matrix, number of trees = ', num2str(trees), ', accuracy = ', num2str(train_accuracy(p), '%.2f'), '%'])
+
+    saveas(gcf, fullfile(output_folder, ['confusion_matrix_train_trees_', num2str(trees), '.png']));
 
     %% Random Forest auf Testbild anwenden
 
@@ -129,15 +146,16 @@ for p = 1:length(tree_sizes)
     figure
     C_test_chart = confusionchart(gt_vector, predicted_label_test_image_vector, 'RowSummary', 'row-normalized', 'ColumnSummary', 'column-normalized');
     C_test_chart.Normalization = 'row-normalized';
-    title(['Confusion matrix, number of trees = ', num2str(trees), ', overall accuracy = ', num2str(overall_accuracy(p)), '%'])
+    title(['Confusion matrix (test), number of trees = ', num2str(trees), ', overall accuracy = ', num2str(overall_accuracy(p)), '%'])
 
-    saveas(gcf, fullfile(output_folder, ['confusion_matrix_trees_', num2str(trees), '.png']));
+    saveas(gcf, fullfile(output_folder, ['confusion_matrix_test_trees_', num2str(trees), '.png']));
 end
 
 %% Plotparameter
-percentages = zeros(7, length(tree_sizes));
+percentages = zeros(8, length(tree_sizes));
 percentages(1:6, 1:end) = main_diagonal;
 percentages(7, 1:end) = overall_accuracy;
+percentages(8, 1:end) = train_accuracy;
 
 figure
 ax = gca;
@@ -156,6 +174,8 @@ plot(tree_sizes, percentages(6, :), '-o', 'Color', 'r')
 hold on
 plot(tree_sizes, percentages(7, :), '--o', 'Color', 'k')
 hold on
+plot(tree_sizes, percentages(8, :), '--o', 'Color', 'b')
+hold on
 ylabel('precision/accuracy [%]')
 ax.YColor = 'k';
 
@@ -170,7 +190,7 @@ xticklabels('auto');
 
 title('Development of precision/accuracy and runtime for different tree sizes')
 xlabel('number of trees')
-legend('Class 1: Impervious surfaces', 'Class 2: Building', 'Class 3: Low Vegetation', ...
-    'Class 4: Tree', 'Class 5: Car', 'Class 6: Clutter/Background', 'Overall accuracy', 'runtime')
-
+legend({'Class 1: Impervious surfaces [Test]', 'Class 2: Building [Test]', 'Class 3: Low Vegetation [Test]', ...
+    'Class 4: Tree [Test]', 'Class 5: Car [Test]', 'Class 6: Clutter/Background [Test]', ...
+    'Test Overall accuracy', 'Train Overall accuracy', 'runtime'}, 'Location', 'eastoutside');
 saveas(gcf, fullfile(output_folder, 'performance_plot.png'));
