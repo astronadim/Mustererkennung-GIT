@@ -22,7 +22,7 @@ end
 
 %% Random Forest mit Trainingsbild
 
-tree_sizes = [1, 5, 10, 20 , 50, 100];
+tree_sizes = [1, 5, 10, 20 , 50];
 runtime = zeros(length(tree_sizes));
 main_diagonal = zeros(6, length(tree_sizes));
 overall_accuracy = zeros(1, length(tree_sizes));
